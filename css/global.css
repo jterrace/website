@@ -1,5 +1,5 @@
 .papertitle {
-  color: #cc0000;
+  letter-spacing: 0.1em;
 }
 
 .align-right {
@@ -8,4 +8,8 @@
 
 .align-center {
   text-align: center;
+}
+
+ul#pubs li {
+  margin-bottom: 7px;
 }
