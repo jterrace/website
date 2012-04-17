@@ -1,0 +1,938 @@
+<style type="text/css">.p{margin-top:1em;} li div.p{margin-top:0;}</style>
+
+
+
+
+
+
+ 
+       
+<div class="p"><!----></div>
+
+
+
+
+
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+   
+
+<div class="p"><!----></div>
+
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+   
+<div class="p"><!----></div>
+
+<title> Bringing P2P to the Web: Security and Privacy in the Firecoral Network</title>
+    
+<h1 align="center"><b>Bringing P2P to the Web: <br />Security and
+  Privacy in the Firecoral Network</b> </h1>
+
+<h3 align="center"><font size="+1">Jeff Terrace, Harold Laidlaw, Hao Eric Liu, Sean Stern, and Michael J. Freedman<br />
+<font size="+1">Princeton University</font> </h3></font> 
+<h3 align="center"> </h3>
+
+<div class="p"><!----></div>
+
+
+
+  
+  
+  
+  
+<div class="p"><!----></div>
+
+
+
+
+<div class="p"><!----></div>
+   
+<h2> Abstract</h2>
+Peer-to-peer systems have been a disruptive technology for enabling
+large-scale Internet content distribution.  Yet web browsers,
+today's dominant application platform, seem inherently based on the
+client/server communication model.
+
+<div class="p"><!----></div>
+This paper presents the design of Firecoral, a browser-based
+extension platform that
+enables the peer-to-peer exchange of web content in a secure, flexible
+manner.  Firecoral provides a highly-configurable interface through
+which users can enforce privacy preferences by carefully specifying
+<em>which</em> content they will share, and a security model that
+guarantees content integrity even in the face of untrusted peers. The
+Firecoral protocol is backwards compatible with today's web standards,
+integrates easily with existing web servers, and is designed not to
+interfere with a typical browsing experience and publishing ecosystem.
+
+<div class="p"><!----></div>
+   
+ <h2><a name="tth_sEc1">
+1</a><a name="sec:intro"></a>&nbsp;&nbsp;Introduction</h2>
+
+<div class="p"><!----></div>
+Peer-to-peer content distribution has been inarguably successful for
+large file distribution (<em>e.g.</em>, BitTorrent&nbsp;[<a href="#bittorrent" name="CITEbittorrent">2</a>]). These
+protocols account for a large fraction of Internet traffic, and they
+have spawned their own body of research, whether focusing on
+performance, fairness and incentives, network friendliness, or resource
+efficiency.
+Peer-to-peer (P2P) protocols are attractive from the perspective of
+both content publishers (who can significantly save on upload
+bandwidth and server provisioning) and potentially even ISPs (who can
+reduce inter-AS transfers if protocols are ISP
+friendly&nbsp;[<a href="#kara:fear" name="CITEkara:fear">7</a>]).
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+As of yet, however, P2P services have been restricted to
+stand-alone applications, not transparently incorporated into Web
+browsing and seamlessly running over HTTP.  If indeed the
+now-trite statement is true-that "web browsers are the new operating
+systems", especially considering technologies&nbsp;[<a href="#xax" name="CITExax">3</a>,<a href="#nativeclient" name="CITEnativeclient">13</a>] which
+further enhance browser capability-then P2P exchanges are once again
+absent. For the browser is built
+around the identifying primitive of a domain name.  Conflating naming,
+location, and authorization, browsers use domains both to specify <em>
+  where</em> to retrieve content (web objects) and <em>what security
+  policies</em> to enforce on downloaded objects.  This design conflation
+seems antithetical to P2P systems.
+
+<div class="p"><!----></div>
+There have been some attempts&nbsp;[<a href="#backslash" name="CITEbackslash">11</a>,<a href="#squirrel" name="CITEsquirrel">6</a>,<a href="#rapidupdate" name="CITErapidupdate">10</a>] to build
+P2P-like web content distribution networks (CDNs), most notably our own
+CoralCDN&nbsp;[<a href="#coralcdn" name="CITEcoralcdn">5</a>].  CoralCDN has been deployed continuously on
+the PlanetLab research platform for almost five
+years, receiving requests from around a million users (unique client
+IPs) per day. 
+However, while CoralCDN was designed to be highly scalable through a
+DHT-like content discovery mechanism, it always remained on PlanetLab
+and thus never operated in a more "peer-to-peer" fashion.  Not
+surprisingly, this restricted deployment became a major limitation:
+CoralCDN's bandwidth demands surpassed PlanetLab's available capacity
+within its first year, leading us to deploy fair-sharing
+algorithms that reject large numbers of requests for 
+popular domains&nbsp;[<a href="#freedman:phdthesis" name="CITEfreedman:phdthesis">4</a>].  But there's good reason
+for this deployment restriction, as malicious proxies otherwise could
+have returned spam, malware, advertisements, or other modified content
+to unsuspecting web clients.
+
+<div class="p"><!----></div>
+We are building a new system, Firecoral, that seeks to overcome these
+limitations and realize P2P web content distribution.  With client
+software implemented as a browser extension, Firecoral allows users to
+perform multi-source downloading (via HTTP Range Requests) between
+participating users and thus, in some sense, "share" their browser
+caches. This paper focuses on several key aspects of Firecoral's
+design that we believe are important for the wide adoption of a
+P2P-based web CDN.
+
+<div class="p"><!----></div>
+For content providers that adopt Firecoral to reduce bandwidth
+consumption, the system should
+
+<ul>
+<li> Integrate easily into existing web servers and provide a
+  familiar user experience,
+<div class="p"><!----></div>
+</li>
+
+<li> Support both Firecoral and non-Firecoral clients simultaneously for
+backwards-compatibility, and
+<div class="p"><!----></div>
+</li>
+
+<li> Not interfere with existing advertisements, analytics,
+  etc. that are in use by servers.
+<div class="p"><!----></div>
+</li>
+</ul>
+
+<div class="p"><!----></div>
+For clients that seek to adopt Firecoral, the system should
+
+<ul>
+<li> Be easy to install and transparent to use,
+<div class="p"><!----></div>
+</li>
+
+<li> Provide content integrity (security) of web content, even if
+    content is fetched from untrusted peers and even if its
+    origin server has not adopted Firecoral itself, and
+<div class="p"><!----></div>
+</li>
+
+<li> Respect privacy/sharing policies through powerful,
+    easy-to-use configuration management.
+<div class="p"><!----></div>
+</li>
+</ul>
+
+<div class="p"><!----></div>
+The remainder of this paper is organized as follows.  Section
+&#167;<a href="#sec:design">2</a> presents Firecoral's architecture and 
+protocols, including the cryptographic mechanisms by which it
+ensures the integrity of P2P content.  Section
+&#167;<a href="#sec:config">3</a> describes how Firecoral allows users to flexibly
+specify what content they wish to share-via programmable "opt-in"
+configuration expressions-to manage its privacy implications.  We
+conclude with some performance benchmarks in &#167;<a href="#sec:eval">4</a>.
+
+<div class="p"><!----></div>
+Focusing on security, privacy, and usability, this paper is
+<em>not</em> about the two main properties that are of typical interest
+in the P2P-CDN literature: performance and incentives. While using
+HTTP Range Requests to specify peer exchanges&nbsp;[<a href="#coblitz" name="CITEcoblitz">9</a>],
+Firecoral is free to implement any combination of peer-selection and
+chunk-scheduling algorithms to improve performance.  Considering
+incentives, however, leads to new research questions.  Traditional
+bilateral-barter approaches (such as BitTorrent's rate-based
+tit-for-tat&nbsp;[<a href="#bittorrent" name="CITEbittorrent">2</a>]) are unlikely to work well in this
+setting, as web objects are often quite small and have very
+low latency requirements.  Incentivization approaches based more on
+stored value may be more applicable (<em>e.g.</em>, PACE&nbsp;[<a href="#pace:conext08" name="CITEpace:conext08">1</a>]),
+although we leave this research direction to future work.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+ <h2><a name="tth_sEc2">
+2</a><a name="sec:design"></a>&nbsp;&nbsp;System Architecture</h2>
+
+
+<div class="p"><!----></div>
+Firecoral enables peers to cooperatively disseminate content by sharing
+their browser caches.  The high-level Firecoral architecture has four
+main components: <em>browser
+  clients</em> (or <em>peers</em>), <em>origin servers</em> that publish content,
+<em>tracker(s)</em> that store peering information and content metadata,
+and cryptographic <em>signing service(s)</em> that authenticate content.
+These latter three services can be run by separate administrative
+entities or in more complex combinations.  Peers can
+interact with Firecoral-unaware origin servers, but any content
+downloaded from them must be authenticated by a signing service before
+it can be shared with other peers.  Firecoral is not designed to work
+with completely unmodified clients (unlike&nbsp;[<a href="#coralcdn" name="CITEcoralcdn">5</a>]), who are
+otherwise unable to verify the integrity of content downloaded from
+untrusted peers.
+
+<div class="p"><!----></div>
+We foresee two main types of trust relationships governing the
+Firecoral ecosystem.  In the first, a tracker trusts a particular
+signing service to authenticate content <em>for any domain</em>.  This
+can be because both logical entities are run by the same party, or
+because the signing service plays a special trust role in the network
+(much like certificate authorities such as Verisign do for the Web).
+Our initial deployment will be of this type: We will
+operate both a tracker for any domain (likely based out of a cluster
+at Princeton) as well as a signing service that it trusts (deployed
+across PlanetLab to satisfy its resource requirements).  This design
+supports P2P exchange even for unmodified 
+origins.
+
+<div class="p"><!----></div>
+In the second scenario, an origin server trusts a particular signing
+service to authenticate content <em>for its domain</em>.  This again may
+be because the origin server itself runs the signing service, or
+because it again explicitly trusts some third party like Verisign.  A
+third-party tracker may not be aware of such a trust relationship, so
+it would need to verify the origin's authorization on demand.
+
+<div class="p"><!----></div>
+In general, we envision multiple different Firecoral deployment
+scenarios to coexist, much as there exists a vibrant BitTorrent
+ecosystem: from publisher-run trackers, to access-controlled private
+trackers, to large centralized trackers such as The Pirate
+Bay&nbsp;[<a href="#piratebay" name="CITEpiratebay">12</a>] (which serves more than 18M
+concurrent peers in over  1.5M torrents), and to transient
+trackers selected from a DHT.<a href="#tthFtNtAAB" name="tthFrefAAB"><sup>1</sup></a>
+
+<div class="p"><!----></div>
+In the next section, we detail the protocol interactions between these
+four parties.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_fIg1">
+</a> 
+<a name="fig:parser">
+</a>
+<center><img src="figs/parser.png" alt="figs/parser.png" />
+
+<center>Figure 1: <b>Firecoral-Enabled Browser Control Path</b></center>
+</center>
+
+<div class="p"><!----></div>
+
+     <h3><a name="tth_sEc2.1">
+2.1</a><a name="sec:design:extension">
+</a>&nbsp;&nbsp;Firecoral Browser Extension</h3>
+
+
+<div class="p"><!----></div>
+We now describe Firecoral's client-side behavior.  Firecoral is
+functionally implemented as a browser extension (currently for
+Firefox) that operates a local proxy to accept both local and remote
+HTTP requests.  We designed this extension with three goals in mind:
+
+<ol type="1">
+<li> Expose the user's web browser cache for remote peer transfers.
+<div class="p"><!----></div>
+</li>
+
+<li> Provide a powerful configuration interface to allow the user to specify
+  exactly what web content is shared.
+<div class="p"><!----></div>
+</li>
+
+<li> Guard the user from possible malicious content injected by other users.
+<div class="p"><!----></div>
+</li>
+</ol>
+The Firecoral proxy operates in a background thread within a user's
+browser.  When the user makes an HTTP request, a Firecoral request
+manager checks the URL against the user's dynamically configured
+whitelist (further explained in &#167;<a href="#sec:config">3</a>) and either forwards
+the request to the local Firecoral proxy or to the browser's standard
+processing path.  This basic browser architecture is shown in
+Figure&nbsp;<a href="#fig:parser">1</a>.  The proxy handles requests coming from the
+local browser as well as remote installations of Firecoral in peer
+browsers.  The Firecoral proxy uses the same disk cache as the
+standard browser, preventing Firecoral from wasting additional disk
+space of the client.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_fIg2">
+</a> 
+<center>
+
+
+
+<a name="fig:overview">
+</a>
+<a name="fig:overview:existing">
+</a>
+<a name="fig:overview:origin">
+</a>
+<a name="fig:overview:signing">
+</a>
+<img src="figs/overview.png"><center>Figure 2: <b>Protocol Interactions between Firecoral Participants</b></center>
+</center>
+
+<div class="p"><!----></div>
+We first consider the simple case that a client accesses a whitelisted
+domain using a pre-configured tracker.  When the Firecoral proxy
+receives a request from the local browser, it sends the URL to this
+tracker (step 1 of Figure&nbsp;<a href="#fig:overview">2</a>).  The tracker
+responds with one of three possible messages:
+
+<div class="p"><!----></div>
+<br />  <b>Content at Peers. </b> The proxy first receives a list
+of content chunks that comprise the web object, as well as peers known
+to be storing the chunks.  Next (Step 2 of
+Fig.<a href="#fig:overview:existing">2(a)</a>), the proxy attempts to download these
+chunks from peers in parallel.  Upon receiving a download request, the
+proxies running on these remote peers check both if the requested URL
+(or Range Request for the URL) is cached locally, as well as if their
+local sharing policy permits access to this content.  If fetching the
+URL's content from its peers is successful (and content verified
+against tracker-supplied hash information), the local proxy returns the data
+to the browser, and registers itself with the tracker as storing the
+URL chunks (Step 3 of Fig.<a href="#fig:overview:existing">2(a)</a>).
+
+<div class="p"><!----></div>
+<br />  <b>URL Not Found. </b> If the tracker is unaware of the
+requested URL, no Firecoral user has yet added the URL to the tracker.
+So, the proxy attempts to retrieve the content from its origin server
+(Step 2 of Figs.<a href="#fig:overview:origin">2(b)</a>
+and&nbsp;<a href="#fig:overview:signing">2(c)</a>) in order to make it subsequently
+available via Firecoral.
+
+<div class="p"><!----></div>
+Consider first the case when the origin server operates a colocated
+signing service.  Then, upon receiving a HTTP request from a Firecoral
+client, it defines a chunking scheme over the URL's web object, signs
+the object and these chunks, and returns the result in HTTP response
+headers.  (We detail the specific security mechanisms
+in &#167;<a href="#sec:design:signer">2.3</a>.)  The client subsequently submits this
+metadata to the tracker (Step 3 of Fig.<a href="#fig:overview:origin">2(b)</a>).
+The tracker in turn verifies the content's signature, retrieving the
+origin's public key on-demand if necessary (Step 4 of
+Fig.<a href="#fig:overview:origin">2(b)</a>) before caching it.
+
+<div class="p"><!----></div>
+On the other hand, Firecoral is also designed for unmodified origin
+servers.  In this case, the client proxy must still retrieve a valid
+signature on the content, so after downloading a vanilla web object
+from the origin server (Step 2 of Fig.<a href="#fig:overview:signing">2(c)</a>) and
+returning it to the browser, it forwards a request to a signing
+service (Step 3 of Fig.<a href="#fig:overview:signing">2(c)</a>).  The signing
+service cannot just blindly trust that the client submits to it the
+URL's correct content however, so it in turn retrieves the URL from
+the origin server itself (Step 4).  The signing service applies some
+chunking scheme over its retrieved content, computes a signature, and
+returns the results.  Finally, the client submits this content to the
+tracker (Step 5).  If the signing service is not explicitly trusted by
+the tracker, it may query the origin server to verify that the signing
+service is authorized to speak for it (not shown), information it also
+caches.  Once verified, the tracker adds the URL to its database.
+Of course, this extended process occurs when a new URL is
+introduced to the tracker.
+
+<div class="p"><!----></div>
+<br />  <b>URL Expired. </b> Every mapping from URL 
+to content (chunks) at the tracker is associated with an expiration
+date.  If that date has passed, the proxy will try and retrieve a new
+version of the content from the origin server (or simply a <tt>
+Not-Modified</tt> message), retrieve a signature, and update the
+tracker. If the origin server fails, the proxy will attempt, instead,
+to fetch the content from the peer list of the most recently expired
+version of the URL.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<br /><br /> This protocol description was from the perspective of a
+client-initiated Firecoral request, <em>e.g.</em>, the client had the URL
+whitelisted.  (We discuss such configuration further in the next
+section.)  Another strategy for server offloading is driven by
+server-side adoption: Origin servers can respond to HTTP requests from
+Firecoral-aware clients with redirection messages to an appropriate
+tracker.
+
+<div class="p"><!----></div>
+One implicit security assumption in these protocols is that an
+adversary cannot hijack DNS or TCP requests; a similar assumption
+governs non-SSL web security today.  Alternatively, one could require
+that all server-side parties have SSL certificates and that
+communication between origin/tracker, origin/signer, and
+tracker/client uses <tt>https</tt>.
+
+<div class="p"><!----></div>
+
+     <h3><a name="tth_sEc2.2">
+2.2</a><a name="sec:design:tracker">
+</a>&nbsp;&nbsp;Tracker</h3>
+
+
+<div class="p"><!----></div>
+The responsibility of the Firecoral tracker is to provide peer
+discovery to users.  The tracker-currently implemented in PHP with a
+memcached, MemcacheDB, and MySQL backend-maintains a set of known
+URLs, each mapped to a list of chunks. Each chunk is mapped to the set
+of peers currently storing the content.  The tracker will only accept
+a new URL mapping if it is newer than the existing one (according to
+its signature) and if the signature verifies.  The signature should be
+generated by one of a list of trusted signing services (public keys)
+acceptable for any domain, or by a key approved by the URL domain's
+origin server (as verified through a <tt>publickeys.txt</tt> HTTP request
+to the origin, as in Step 4 in Fig.<a href="#fig:overview:origin">2(b)</a>).
+
+<div class="p"><!----></div>
+Upon downloading an object chunk, clients report their
+caching status to the tracker, which adds them to its list of known
+cache points.  When a URL is requested, the tracker returns some
+subset of each chunks' peers to the client.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+The tracker additionally keeps track of the last time it has received
+communication from each Firecoral peer. When a pre-configured length
+of time has passed without any communication (and no persistent TCP
+connection between client and tracker exists), the tracker removes the
+client from any chunk it was listed as storing. 
+Unlike typical browsers, however, our client
+implementation is designed for unreliable peers, so chunk requests are
+issued in parallel and quickly fail over to handle
+unresponsiveness.
+
+<div class="p"><!----></div>
+
+     <h3><a name="tth_sEc2.3">
+2.3</a><a name="sec:design:signer">
+</a>&nbsp;&nbsp;Signing Service</h3>
+
+
+<div class="p"><!----></div>
+The signing service serves as a trusted third-party that validates
+content hashes. Without this service, malicious users could send
+arbitrary content to their peers, posing a huge security risk to
+Firecoral users. As mentioned above, the tracker will only accept URLs
+that are accompanied with a content hash signed by the signing
+service.  To initiate a request, a client sends <font face="symbol">[</font
+>url, &nbsp;&nbsp;h<sub>body</sub><font face="symbol">]</font
+> to the signing service, where h<sub>body</sub> is the
+SHA-256 hash H of the <em>body</em> of the document (fetched earlier
+from the origin server).  The signing service then itself fetches the
+document, D, located at the given URL, and computes h<sub>D</sub>, the
+SHA-256 hash H of the body of D.  To support parallel downloading of
+larger objects, the signing service also breaks D into a set of
+smaller chunks.  While our current implementation uses fixed-size
+chunks of 50&nbsp;KB (except for a final 25-75&nbsp;KB chunk), it's important
+to note that the chunking scheme can differ per signing service and
+per object, as the size of each chunk is fully specified in object
+metadata.  Thus, a signing service could as easily implement semantic
+chunking, such as through Rabin fingerprints&nbsp;[<a href="#lbfs" name="CITElbfs">8</a>].  
+
+<div class="p"><!----></div>
+To allow peers to validate the integrity of individual chunks, the
+signing service computes the following tuples:
+
+<br clear="all" /><table border="0" width="100%"><tr><td>
+<table border="0" cellspacing="0" cellpadding="0">
+ <tr><td width="50%"></td><td nowrap="nowrap" align="right" colspan="1"><table border="0" cellspacing="0" cellpadding="2"><tr><td nowrap="nowrap" align="left">
+h<sub>chunk,i</sub> </td></tr></table></td><td nowrap="nowrap" align="left">
+<table border="0" cellspacing="0" cellpadding="2"><tr><td nowrap="nowrap" align="left">
+ = </td></tr></table></td><td nowrap="nowrap" align="left">
+<table border="0" cellspacing="0" cellpadding="2"><tr><td nowrap="nowrap" align="left">
+<font face="symbol">[</font
+>&nbsp;&nbsp;start<sub>i</sub>, &nbsp;&nbsp;end<sub>i</sub>, &nbsp;&nbsp;H &nbsp;&nbsp;( &nbsp;&nbsp;D&nbsp;&nbsp;[start<sub>i</sub>:end<sub>i</sub>]&nbsp;&nbsp;)<font face="symbol">]</font
+></td></tr></table></td><td width="50%"></td></tr>
+ <tr><td width="50%"></td><td nowrap="nowrap" align="right" colspan="1"><table border="0" cellspacing="0" cellpadding="2"><tr><td nowrap="nowrap" align="left">
+h<sub>chunks</sub> </td></tr></table></td><td nowrap="nowrap" align="left">
+<table border="0" cellspacing="0" cellpadding="2"><tr><td nowrap="nowrap" align="left">
+ = </td></tr></table></td><td nowrap="nowrap" align="left">
+<table><tr><td nowrap="nowrap" align="right" colspan="1">[ &nbsp;&nbsp;h<sub>chunk,1</sub> &nbsp;&nbsp;, &nbsp;&nbsp;h<sub>chunk,2</sub> &nbsp;&nbsp;, &nbsp;&nbsp;<font face="symbol">&hellip;</font
+>&nbsp;&nbsp;, &nbsp;&nbsp;h<sub>chunk,N</sub> &nbsp;&nbsp;]</td></tr></table></td><td width="50%"></td></tr></table>
+</td></tr></table>
+
+
+
+<div class="p"><!----></div>
+
+The signing service then uses its private signature key, k, to sign
+the following message:
+
+<br clear="all" /><table border="0" width="100%"><tr><td>
+<table border="0" cellspacing="0" cellpadding="0">
+ <tr><td width="50%"></td><td nowrap="nowrap" align="right" colspan="1"><table border="0" cellspacing="0" cellpadding="2"><tr><td nowrap="nowrap" align="left">
+<font face="symbol">s</font
+></td></tr></table></td><td nowrap="nowrap" align="left">
+<table border="0" cellspacing="0" cellpadding="2"><tr><td nowrap="nowrap" align="left">
+ = </td></tr></table></td><td nowrap="nowrap" align="left">
+<table><tr><td nowrap="nowrap" align="right" colspan="1">Sig<sub>k</sub> &nbsp;&nbsp;(&nbsp;&nbsp;url, &nbsp;&nbsp;h<sub>D</sub>, &nbsp;&nbsp;h<sub>chunks</sub>, &nbsp;&nbsp;hdrs,&nbsp;&nbsp;t<sub>now</sub>, &nbsp;&nbsp;t<sub>exp</sub> &nbsp;&nbsp;)</td></tr></table></td><td width="50%"></td></tr></table>
+</td></tr></table>
+
+
+
+<div class="p"><!----></div>
+
+where hdrs is a subset of HTTP headers from the origin server,
+t<sub>now</sub> is the timestamp of the request, and t<sub>exp</sub> is the
+expiration date of the signature (likely at least as long as the
+document's HTTP expiry time). Our current implementation uses RSA-PSS
+signatures with 1024-bit keys. The following is then sent back to the
+client:
+
+<br clear="all" /><table border="0" width="100%"><tr><td>
+<table border="0" cellspacing="0" cellpadding="0">
+ <tr><td width="50%"></td><td nowrap="nowrap" align="right" colspan="1"><table><tr><td nowrap="nowrap" align="right" colspan="1"><font face="symbol">[</font
+>&nbsp;&nbsp;<font face="symbol">s</font
+>, &nbsp;&nbsp;url, &nbsp;&nbsp;h<sub>D</sub>, &nbsp;&nbsp;h<sub>chunks</sub>, &nbsp;&nbsp;hdrs, &nbsp;&nbsp;t<sub>now</sub>, &nbsp;&nbsp;t<sub>exp</sub>, &nbsp;&nbsp;[D] &nbsp;&nbsp;<font face="symbol">]</font
+></td></tr></table></td><td width="50%"></td></tr></table>
+</td></tr></table>
+
+
+
+<div class="p"><!----></div>
+
+where D is only included if h<sub>D</sub>  <font face="symbol">&ne;</font
+> h<sub>body</sub>.  (Note that the
+prior downloaded content can be displayed to the client's user, but
+D is replaced in its browser cache, as only this version of the web
+object has been verified by a signing service and thus valid for
+sharing.)  This design choice, as opposed to having clients always
+downloading content directly through the signing service, is a
+trade-off focused on minimizing the signing service's upstream
+utilization.
+
+<div class="p"><!----></div>
+The client will subsequently submit this information (minus the actual
+D) to the tracker, who verifies <font face="symbol">s</font
+>.  When other clients
+subsequently make requests to the tracker, it returns the <font face="symbol">[</font
+>start<sub>i</sub>, end<sub>i</sub>, h<sub>chunk,i</sub> <font face="symbol">]</font
+> for each chunk.<a href="#tthFtNtAAC" name="tthFrefAAC"><sup>2</sup></a>  Then, as a
+client's Firecoral proxy downloads chunks from other peers, it
+verifies that H(chunk<sub>i</sub>) = h<sub>chunk,i</sub> before returning it to the
+client.
+
+
+ <h2><a name="tth_sEc3">
+3</a><a name="sec:config">
+</a>&nbsp;&nbsp;Configuration Management</h2>
+
+
+<div class="p"><!----></div>
+So far, we've focused on <em>how</em> to incorporate secure peer-to-peer
+sharing with Firecoral, not <em>when</em> to actually do so.  Our
+process balances two sets of conflicting interests.  
+
+<div class="p"><!----></div>
+On one hand, using Firecoral could enable clients to access content
+that would be otherwise unavailable due to under-provisioned servers,
+to possibly improve performance given geographic distributions of
+clients and servers, to circumvent censorship or blocking
+restrictions, or to gain potential privacy benefits with respect to
+origin servers by avoiding them directly in many cases.
+
+<div class="p"><!----></div>
+On the other hand, performance would certainly suffer with respect to
+accessing content from well-located, provisioned websites or
+commercial CDNs. Firecoral should not noticeably interfere with
+existing advertisement or analytics methods desired by servers.
+Personalized or private data should not be exposed by users, and
+clients should have flexible and powerful control over what content is
+retrieved from origin servers and what from Firecoral peers, as the
+very act of requesting certain content from a Firecoral tracker and
+other peers has definite privacy implications: they see what URLs you
+download from them.
+
+<div class="p"><!----></div>
+
+     <h3><a name="tth_sEc3.1">
+3.1</a>&nbsp;&nbsp;Enforcement Mechanisms</h3>
+
+<div class="p"><!----></div>
+This section describes the configuration mechanisms by which Firecoral
+clients can specify their sharing policies.  At a high-level,
+Firecoral allows users to both <em>whitelist</em> (opt-in) and <em>
+  blacklist</em> (opt-out) of domains and/or URLs.
+
+<div class="p"><!----></div>
+<b><em>Whitelisting</em></b> content on a per-domain or per-URL basis (<em>e.g.</em>, 
+<tt>http://*.example.com/*</tt>) means that clients can <em>a priori</em>
+  specify a set of domains for which Firecoral should attempt to
+  cooperatively retrieve content from other peers.  A client's settings
+  may be based on these domains' chronic under-provisioning, geographic
+  proximity, or content-blocking practices, as well as client privacy
+  preferences.  We should note, however, that such a mechanism does
+  nothing to alleviate the phenomenon of <em>transient</em>
+  unavailability caused by flash crowds or temporary server failures,
+  which we address next in &#167;<a href="#sec:transient">3.2</a>.
+
+<div class="p"><!----></div>
+<b><em>Blacklisting</em></b> on a per-domain or per-URL basis allows a
+  client to override the use of Firecoral, either because a server
+  adopts it (per Figure&nbsp;<a href="#fig:overview:origin">2(b)</a>) or through dynamic
+  adoption (described next).  To avoid server redirection,
+  Firecoral headers are omitted when issuing HTTP requests to
+  blacklisted origins.  Firecoral additionally will not cooperatively
+  share (or register with a tracker) content that is marked as
+  <tt>private</tt>, marked as <tt>no-cache</tt>, the result of a POST operation,
+  or some form of similarly personalized content.
+
+<div class="p"><!----></div>
+
+     <h3><a name="tth_sEc3.2">
+3.2</a><a name="sec:transient">
+</a>
+&nbsp;&nbsp;Handling Flash-Crowd Scenarios</h3>
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+The so-called "Slashdot effect" may seem challenging to mitigate
+transparently.  It does not affect the news aggregators or
+portals for which it is blamed-Slashdot, Digg, BoingBoing, and so
+on-but rather the often under-provisioned, and almost always
+unsuspecting, websites to which they link.  Whitelisting the portals
+themselves has no effect, as they have well provisioned and highly
+redundant server architectures. Requiring adoption by these
+portals is unattractive from a deployment standpoint.
+Finally, simply extending whitelisting to <tt>Referer</tt> headers
+disregards our ad-friendly goals: such a rule captures too many sites
+(third-party image hosting, CDNs, advertisement networks, analytics
+services, etc.)  in its broad net.
+
+<div class="p"><!----></div>
+The solution, therefore, seems to be domain- or URL-specific parsing
+rules that characterize individual links on these pages.  One could
+imagine a simple strategy: A parsing engine applies these rules to
+content as it is being rendered in the browser.  When it discovers a
+link, it inserts the <em>full URL</em> being referenced into the
+Firecoral whitelist, marking the URL with some short time-to-live
+value.  Subsequent requests to this URL will thus transparently go
+through Firecoral, rather than directly to its origin server.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+<a name="tth_fIg3">
+</font>
+
+<a name="fig:slashdot">
+</a>
+<table border="1" align="center"><tr><td><tt>&lt;div type="story" class="article"&gt;<br>&nbsp;&lt;div class="body" id="fhbody-3011301"&gt;<br>&nbsp;&nbsp;&lt;div id="text-3011301"&gt;<br>&nbsp;&nbsp;&nbsp;The first flying auto... The &lt;a href=<br>&nbsp;&nbsp;&nbsp;"http://www.terrafugia.com/aircraft.html"&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;Terrafugia Transition&lt;/a&gt;, which can<br>&nbsp;...<br>&nbsp;&nbsp;&lt;/div&gt;<br>&nbsp;&lt;/div&gt;<br>&lt;/div&gt;</tt></td></tr></table><center>Figure 3: <b>An example of Slashdot's article HTML.
+The following XPath query would match all external links from
+articles and comments: <b><em>//div[@class='body' or
+@class='commentBody']/descendant::a[starts-with(@href, 'http://')]</em></b>.</b></center>
+
+<div class="p"><!----></div>
+Fortunately, modern HTML programming practices offer a nice
+solution. Many portals or aggregators have a similar textual and
+presentation styling for their content, such as a vertically-oriented
+list and synopsis of articles or links.  Thus, through classic
+abstraction, they typically represent these like content elements with
+a common name-a distinct <em>CSS class</em>-that will specify their
+visual properties.  From our perspectives, this enables us to write
+very simple rules with which to <em>parse</em> the HTML pages:
+Specifically, use an XML Path Language (XPath) query that extracts
+URLs (in <tt>href</tt>'s) located within a specified Document Object
+Model (DOM) class, as shown in Figure&nbsp;<a href="#fig:slashdot">3</a> for an
+example Slashdot article.<a href="#tthFtNtAAD" name="tthFrefAAD"><sup>3</sup></a> These queries are simple to write, highly
+similar or identical across domains, and only extract the desired
+links (<em>e.g.</em>, those within news or story articles).  Thus, sites with a
+higher likelihood of being transiently under-provisioned can be
+mirrored and shared automatically by Firecoral users as soon as they
+appear on a news aggregator site.  On the other hand,
+highly-provisioned sites like CNN-or undesirable domains for privacy
+reasons-can be avoided by a client through simple domain
+blacklisting. Since most users will probably want to maintain similar
+whitelists and blacklists, Firecoral will support subscriptions for
+common usage patterns, as is already done in many Firefox extensions
+(<em>e.g.</em>, for AdBlock+ filters).
+
+<div class="p"><!----></div>
+
+
+<div class="p"><!----></div>
+
+ <h2><a name="tth_sEc4">
+4</a><a name="sec:eval">
+</a>&nbsp;&nbsp;Benchmarks</h2>
+
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+Our prototype implementation consists of a <em>tracker</em> written in 1000 lines
+of PHP, a <em>signing service</em> written in 700 lines of Python, and a Firefox
+extension written in 7000 lines of JavaScript, XUL, and CSS. Our extension
+implements a full HTTP proxy server in JavaScript, utilizing Mozilla's
+XPConnect API to use low-level network functions.
+Although our deployment is currently limited to Firefox, the Firecoral API is
+open for implementation in other platforms.
+
+<div class="p"><!----></div>
+<a name="tth_fIg4">
+</a> 
+<center>
+<a name="tab:ss_bench">
+</a>
+<table border="1">
+<tr><td align="right"><b>Obj.&nbsp;Size</b> </td><td align="right"><b>Latency (ms)</b> </td><td align="right"><b>Throughput (resp/s)</b> </td></tr>
+<tr><td align="right">500B </td><td align="right">6.93 </td><td align="right">356.76 </td></tr>
+<tr><td align="right">5KB </td><td align="right">7.39 </td><td align="right">340.99 </td></tr>
+<tr><td align="right">50KB </td><td align="right">9.79 </td><td align="right">284.65 </td></tr>
+<tr><td align="right">500KB </td><td align="right">13.72 </td><td align="right">197.72 </td></tr></table>
+
+
+<center>Figure 4: <b>Mean latency and throughput microbenchmarks for the Firecoral signing service.</b></center>
+
+
+</center>
+
+<div class="p"><!----></div>
+<br />  <b>Signing service microbenchmarks. </b>
+We have implemented a prototype signing service in Python running on Apache's
+<tt>mod_python</tt>. To test its performance capabilities, we placed varying size files
+on a web server, installed the signing service on a second web server, and used the
+Apache Benchmark (<tt>ab</tt>) utility to request the files be signed.
+All three machines had Intel Xeon quad-core 2GHz processors,
+connected on a 1GBit network. Figure <a href="#tab:ss_bench">4</a> shows the results
+of our tests. 
+
+<div class="p"><!----></div>
+Even though throughput is somewhat low, recall that the signing
+service is only invoked the first time a URL is added to the tracker
+or when a URL expires.
+Also, the signing service can be scaled out to multiple servers that
+share a single private key-increasing throughput linearly with the
+number of servers.  This performance is likely due to Python's
+overhead; the actual 1024-bit RSA-PSS signature (which uses the native
+Crypto++ library) takes less than 1.2ms on one core.  In the future, we may
+implement the signing service in a faster environment (<em>e.g.</em>, C++).
+
+<div class="p"><!----></div>
+<br />  <b>Browser performance impact. </b>
+The configuration system of &#167;<a href="#sec:config">3</a> needs to
+seamlessly integrate into the browser without noticeably impacting
+performance.  The list of XPath configuration rules is indexed by
+domain name, so when a browser page is loaded, a simple hash-table
+lookup is performed to test if the domain is in the rule set (or, more
+precisely, a lookup is performed per subdomain).
+If a match occurs, the XPath query specified is run on the page's
+DOM. When evaluating Slashdot's front page, Firecoral processes 50 URL
+additions into the transient whitelist in less than 3ms; extracting
+out 15 URLs from digg takes less than 1ms.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+ <h2><a name="tth_sEc5">
+5</a><a name="sec:conclusion">
+</a>&nbsp;&nbsp;Conclusions</h2>
+
+<div class="p"><!----></div>
+This paper introduces Firecoral, a P2P web-CDN designed around the
+idea of turning client browsers into servers and transparently sharing
+their caches.  We specifically focused on issues of security,
+privacy, and usability, all critical aspects of P2P system design, yet
+mostly ignored in prior work.  An initial implementation of Firecoral
+appears promising, yet several important problems remain.  These range
+from research questions-such as the choice of peering algorithms and
+incentive strategies-as well as practical deployment issues such as
+NAT hole punching and tracker scalability. An alpha version of our Firecoral
+extension is currently available for download at our website at
+<a href="http://www.firecoral.net/"><tt>http://www.firecoral.net/</tt></a>.
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+<div class="p"><!----></div>
+
+<font size="-1">
+
+<div class="p"><!----></div>
+<h2>References</h2>
+
+<dl compact="compact">
+ <dt><a href="#CITEpace:conext08" name="pace:conext08">[1]</a></dt><dd>
+C.&nbsp;Aperjis, M.&nbsp;J. Freedman, and R.&nbsp;Johari.
+ Peer-assisted content distribution with prices.
+ In <em>Proc.&nbsp;SIGCOMM CoNext</em>, Dec. 2008.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEbittorrent" name="bittorrent">[2]</a></dt><dd>
+B.&nbsp;Cohen.
+ Incentives build robustness in BitTorrent.
+ In <em>Proc.&nbsp;P2P-ECON</em>, June 2003.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITExax" name="xax">[3]</a></dt><dd>
+J.&nbsp;R. Douceur, J.&nbsp;Elson, J.&nbsp;Howell, and J.&nbsp;R. Lorch.
+ Leveraging legacy code to deploy desktop applications on the web.
+ In <em>Proc.&nbsp;OSDI</em>, Dec. 2008.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEfreedman:phdthesis" name="freedman:phdthesis">[4]</a></dt><dd>
+M.&nbsp;J. Freedman.
+ <em>Democratizing Content Distribution</em>.
+ PhD thesis, New York University, 2007.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEcoralcdn" name="coralcdn">[5]</a></dt><dd>
+M.&nbsp;J. Freedman, E.&nbsp;Freudenthal, and D.&nbsp;Mazi&#232;res.
+ Democratizing content publication with Coral.
+ In <em>Proc.&nbsp;NSDI</em>, Mar. 2004.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEsquirrel" name="squirrel">[6]</a></dt><dd>
+S.&nbsp;Iyer, A.&nbsp;Rowstron, and P.&nbsp;Druschel.
+ Squirrel: A decentralized peer-to-peer web cache.
+ In <em>Proc.&nbsp;PODC</em>, July 2002.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEkara:fear" name="kara:fear">[7]</a></dt><dd>
+T.&nbsp;Karagiannis, P.&nbsp;Rodriguez, and K.&nbsp;Papagiannaki.
+ Should Internet service providers fear peer-assisted content
+  distribution?
+ In <em>Proc.&nbsp;IMC</em>, Oct. 2005.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITElbfs" name="lbfs">[8]</a></dt><dd>
+A.&nbsp;Muthitacharoen, B.&nbsp;Chen, and D.&nbsp;Mazi&#232;res.
+ A low-bandwidth network file system.
+ In <em>Proc.&nbsp;SOSP</em>, Oct. 2001.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEcoblitz" name="coblitz">[9]</a></dt><dd>
+K.&nbsp;Park and V.&nbsp;S. Pai.
+ Scale and performance in the CoBlitz large-file distribution
+  service.
+ In <em>Proc.&nbsp;NSDI</em>, May 2006.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITErapidupdate" name="rapidupdate">[10]</a></dt><dd>
+D.&nbsp;Serenyi and B.&nbsp;Witten.
+ RapidUpdate: Peer-assisted distribution of security content.
+ In <em>Proc.&nbsp;IPTPS</em>, Feb. 2008.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEbackslash" name="backslash">[11]</a></dt><dd>
+T.&nbsp;Stading, P.&nbsp;Maniatis, and M.&nbsp;Baker.
+ Peer-to-peer caching schemes to address flash crowds.
+ In <em>Proc.&nbsp;IPTPS</em>, Mar. 2002.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEpiratebay" name="piratebay">[12]</a></dt><dd>
+The Pirate Bay.
+ http://thepiratebay.org/, Jan 12 2009.
+
+<div class="p"><!----></div>
+</dd>
+ <dt><a href="#CITEnativeclient" name="nativeclient">[13]</a></dt><dd>
+B.&nbsp;Yee, D.&nbsp;Sehr, G.&nbsp;Dardyk, J.&nbsp;B. Chen, R.&nbsp;Muth, T.&nbsp;Ormandy, S.&nbsp;Okasaka,
+  N.&nbsp;Narula, and N.&nbsp;Fullagar.
+ Native Client: A sandbox for portable, untrusted x86 native code.
+ In <em>Proc.&nbsp;Symp. on Security and Privacy</em>, May 2009.</dd>
+</dl>
+
+
+
+<div class="p"><!----></div>
+</font><hr /><h3>Footnotes:</h3>
+
+<div class="p"><!----></div>
+<a name="tthFtNtAAB"></a><a href="#tthFrefAAB"><sup>1</sup></a>This paper does not consider
+untrusted trackers.  Similar to 
+BitTorrent, however, a Firecoral tracker really only needs to be trusted to
+provide availability, not integrity, at a small additional
+client-side verification cost.
+<div class="p"><!----></div>
+<a name="tthFtNtAAC"></a><a href="#tthFrefAAC"><sup>2</sup></a>If the
+  tracker is only trusted for availability, but not content integrity,
+  it should also return the actual <font face="symbol">s</font
+> to be verified by the
+  client, but we do not currently implement this case.
+<div class="p"><!----></div>
+<a name="tthFtNtAAD"></a><a href="#tthFrefAAD"><sup>3</sup></a>Coincidentally, this article
+posting of Jan 12, 2009 caused the bandwidth quota of the linked site
+to be quickly exceeded, leading to its hosting service to return an
+error code for the page.

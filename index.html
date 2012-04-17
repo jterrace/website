@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<title>Jeff Terrace - Princeton University</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<meta name="author" content="Jeff Terrace" >
+<meta name="description" content="Jeff Terrace's Website at Princeton University" >
+<meta name="keywords" content="jeff, terrace, jeff terrace, princeton, university, princeton university" >
+
+<link href="css/bootstrap.css" rel="stylesheet" >
+<link href="css/global.css" rel="stylesheet" >
+
+<script src="js/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+   $(document).ready(function() {
+      $('a.acm_authorizer').each(function() {
+         $(this).attr('href', 'http://dl.acm.org/authorize?' + $(this).attr('id').substr(4));
+      });
+   });
+</script>
+
+</head>
+
+<body>
+
+<div class="container">
+  <div class="row">
+    
+    <div class="span9">
+      <div class="page-header"><h1>Jeff Terrace <small>5th year computer science PhD student</small></h1></div>
+      
+      <div class="row">
+        <div class="span6">
+          <h2>About Me</h2>
+          <p>I am currently a fifth year graduate student at <a href="http://www.princeton.edu/">Princeton University</a>
+             in the <a href="http://www.cs.princeton.edu/">Computer Science</a> PhD program and am advised by
+             <a href="http://www.cs.princeton.edu/~mfreed/">Michael J. Freedman</a>. I graduated from
+             <a href="http://www.umass.edu">University of Massachusetts Amherst</a> in 2007 with a B.S. in Computer
+             Science and Mathematics.</p>
+          <p>I am a member of the <a href="http://sns.cs.princeton.edu/">S* Network Systems</a> (SNS) group, a
+             subdivision of the <a href="http://nsg.cs.princeton.edu/">Network Systems Group</a>.</p>
+          <p>I contribute to the <a href="http://sns.cs.princeton.edu/blog/">SNS Blog</a> where an
+             <a href="http://sns.cs.princeton.edu/author/jterrace/">archive</a> of my posts can be found.</p>
+        </div>
+        
+        <div class="span3 align-right">
+          <h2>Contact</h2>
+          <address>
+            Princeton University<br>
+            Department of Computer Science<br>
+            35 Olden Street<br>
+            Room 317<br>
+            Princeton, NJ 08540-5233<br>
+            <a href="mailto:jterrace@cs.princeton.edu">jterrace@cs.princeton.edu</a><br>
+          </address>
+        </div>
+      </div>
+      
+      <h2>Research</h2>
+      <dl>
+      <dt>Dynamic Content Distribution for Virtual Worlds</dt>
+      <dd>Developing a scalable, decentralized content distribution network for use in the Meru online virtual world.
+      Meru is being designed as an open, programmable, scalable, secure, and extensible virtual environment which
+      requires a fast, scalable CDN. Virtual worlds present particular scheduling challenges for content retrieval,
+      given both the interactive, real-time nature of users' demands and the amount of potentially-visible content
+      that can exceed users' bandwith capacities.</dd>
+      <dt>Selectively Materializing User Event Feeds</dt>
+      <dd>Leveraging Yahoo's PNUTS key-value database system, designed and implemented a framework for efficiently
+      constructing real-time web content that shows the latest events from a user's event feed. Superior performance
+      resulted from a hybrid strategy of selectively materializing each user's feed: events from high-rate producers
+      are retrieved at query time, while events from lower-rate producers are materialized in advance.</dd>
+      <dt>Scalable storage systems</dt>
+      <dd>Developing a datacenter-focused storage system&mdash;CRAQ (Chain Replication with Apportioned Queries)&mdash;capable
+      of good availability, high throughput, and low latency, while providing a sliding scale of read consistency operations
+      (from eventual to strong consistency guarantees). Special consideration is given to high-performance support for
+      cross-data-center replication, using geo-diversity for performance and fault-tolerance reasons.</dd>
+      <dt>Peer-to-peer Content Distribution</dt>
+      <dd>Developing a new browser-based peer-to-peer content distribution network called Firecoral. Firecoral enables mutually
+      distrustful users to share their browser caches, yet ensures the authenticity of content and enables users to preserve
+      privacy by expressing flexible content sharing policies.</dd>
+      </dl>
+      
+      <h2>Publications</h2>
+      <p>
+      <ul id="pubs">
+      
+      <li>
+      <span class="papertitle">Unsupervised Conversion of 3D models for Interactive Metaverses</span><br >
+      <strong>Jeff Terrace</strong>, Ewen Cheslack-Postava, Philip Levis and Michael J. Freedman<br >
+      <em>Proc. IEEE International Conference on Multimedia and Expo</em><br >
+      (<a href="http://www.icme2012.org/">ICME '12</a>) Melbourne, Australia, July 2012, <em>To Appear</em>
+      </li>
+      
+      <li>
+      <span class="papertitle">A Scalable Server for 3D Metaverses</span><br >
+      Ewen Cheslack-Postava, Tahir Azim, Behram F. T. Mistree, Daniel Reiter Horn, <strong>Jeff Terrace</strong>, Philip Levis, and Michael J. Freedman<br >
+      <em>Proc. USENIX Annual Technical Conference</em><br >
+      (<a href="http://static.usenix.org/events/atc12/">USENIX ATC '12</a>) Boston, MA, June 2012, <em>To Appear</em>
+      </li>
+      
+      <li>
+      <span class="papertitle">JavaScript in JavaScript (js.js): Sandboxing third-party scripts</span><br >
+      <strong>Jeff Terrace</strong>, Stephen R. Beard, and Naga Praveen Kumar Katta<br >
+      <em>Proc. USENIX Conference on Web Application Development</em><br >
+      (<a href="http://static.usenix.org/events/webapps12/">WebApps '12</a>) Boston, MA, June 2012, <em>To Appear</em>                       
+      </li>
+      
+      <li>
+      <span class="papertitle">Feeding Frenzy: Selectively Materializing Users' Event Feeds</span><br >
+      Adam Silberstein, <strong>Jeff Terrace</strong>, Brian F. Cooper, and Raghu Ramakrishnan<br >
+      <em>Proc. ACM Special Interest Group on Management of Data</em><br >
+      (<a href="http://www.sigmod2010.org/">SIGMOD '10</a>) Indianapolis, IN, June 2010 [<a class="acm_authorizer" id="acm_350703" href="docs/feeding-frenzy-sigmod10-web.pdf">PDF</a>]
+      </li>
+      
+      <li>
+      <span class="papertitle">Object Storage on CRAQ: High-throughput chain replication for read-mostly workloads</span><br >
+      <strong>Jeff Terrace</strong> and Michael J. Freedman<br >
+      <em>Proc. USENIX Annual Technical Conference</em><br >
+      (<a href="http://www.usenix.org/event/usenix09/">USENIX &#8216;09</a>) San Diego, CA, June 2009 [<a href="docs/craq-usenix09.pdf">PDF</a>, <a href="docs/craq-slides.pptx">Slides</a>, <a href="http://www.youtube.com/watch?v=TC-lCxoFKqA">Video Presentation from USENIX</a>]
+      </li>
+      
+      <li>
+      <span class="papertitle">Bringing P2P to the Web: Security and Privacy in the Firecoral Network</span><br >
+      <strong>Jeff Terrace</strong>, Harold Laidlaw, Hao Eric Liu, Sean Stern, and Michael J. Freedman<br >
+      <em>Proc. 8th International Workshop on Peer-to-Peer Systems</em><br >
+      (<a href="http://www.usenix.org/event/iptps09/">IPTPS &#8216;09</a>) Boston, MA, April 2009 [<a href="docs/firecoral-iptps09-final.pdf">PDF</a>, <a href="docs/firecoral_html/firecoral-iptps09-final.html">HTML</a>, <a href="docs/firecoral-slides.pptx">Slides</a>]
+      </li>
+      
+      </ul>
+      </p>
+      <p>
+      You can view my publications on <a href="http://scholar.google.com/citations?user=sazJjnkAAAAJ">Google Scholar</a>.
+      </p>
+      
+      <div class="row">
+        <div class="span4">
+          <h2>Hacking</h2>
+          <ul>
+          <li>You can follow me <a href="https://github.com/jterrace">on GitHub</a> and <a href="https://bitbucket.org/jterrace">on Bitbucket</a></li>
+          <li><a href="https://github.com/sirikata/sirikata">Sirikata</a> - an open source vitual world platform</li>
+          <li><a href="https://github.com/pycollada/pycollada">pycollada</a> - a python library for creating, editing, and loading <a href="https://collada.org/">COLLADA</a> documents</li>
+          <li><a href="https://github.com/pycollada/meshtool">meshtool</a> - a utility for manipulating mesh data</li>
+          <li><a href="https://github.com/jterrace/js.js/">js.js</a> - a JavaScript interpreter ported to JavaScript</li>
+          </ul>
+          
+          <h2>Teaching</h2>
+          <ul>
+          <li>Computer Networks (<a href="http://www.cs.princeton.edu/courses/archive/spring09/cos461/">COS 461</a> - Spring 2009)</li>
+          <li>General Computer Science (<a href="http://www.cs.princeton.edu/courses/archive/fall08/cos126/">COS 126</a> - Fall 2008)</li>
+          </ul>
+        </div>
+        <div class="span5">
+          <h2>Courses</h2>
+          <ul>
+          <li>Advanced Computer Networks (<a href="http://www.cs.princeton.edu/courses/archive/fall08/cos561/">COS 561</a>) - Fall 2008</li>
+          <li>Principles of Database and Information Systems (<a href="http://www.cs.princeton.edu/courses/archive/fall08/cos597A/">COS 597A</a>) - Fall 2008</li>
+          <li>Systems and Networking for Virtual Worlds (<a href="http://www.cs.princeton.edu/courses/archive/fall08/cos597B/">COS 597B</a>) - Fall 2008</li>
+          <li>Theory of Algorithms (<a href="http://www.cs.princeton.edu/courses/archive/spring08/cos423/">COS 423</a>) - Spring 2008</li>
+          <li>Interacting with Data (<a href="http://www.cs.princeton.edu/courses/archive/spring08/cos424/">COS 424</a>) - Spring 2008</li>
+          <li>Computer Vision (<a href="http://www.cs.princeton.edu/courses/archive/fall07/cos429/">COS 429</a>) - Fall 2007</li>
+          <li>Advanced Operating Systems (<a href="http://www.cs.princeton.edu/courses/archive/fall07/cos518/">COS 518</a>) - Fall 2007</li>
+          </ul>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div class="span3">
+      <p></p>
+      <div class="thumbnail">
+        <img alt="Jeff Terrace" src="img/jeff_terrace.jpg" >
+      </div>
+      <p></p>
+      <div class="align-center">
+        <a href="http://stackoverflow.com/users/624900/jterrace">
+          <img alt="jterrace - Stack Overflow" src="http://stackoverflow.com/users/flair/624900.png" >
+        </a>
+      </div>
+      <p></p>
+      <div class="align-right">
+        <a href="http://validator.w3.org/check?uri=referer">
+          <img src="http://www.w3.org/html/logo/badge/html5-badge-h-solo.png" alt="HTML5" height="64" width="63">
+        </a>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+</body>
+
+</html>
