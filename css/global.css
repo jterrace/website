@@ -13,3 +13,7 @@
 ul#pubs li {
   margin-bottom: 7px;
 }
+
+ul#thesis-types li {
+  text-align: center;
+}
