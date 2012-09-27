@@ -1,3 +1,14 @@
+div#right-bar {
+  margin-top: 20px;
+}
+
+div#right-bar iframe {
+  border: 0;
+  width: 200px;
+  height: 142px;
+  overflow: hidden;
+}
+
 .papertitle {
   font-style: italic;
 }
